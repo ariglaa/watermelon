@@ -59,6 +59,31 @@
   </div>
 
   <script>
+    function animateWatermelon(melon) {
+      const startX = Math.random() * (window.innerWidth - 80);
+      const startY = window.innerHeight + 100;
+      const endX = startX + (Math.random() * 200 - 100);
+      const peakY = window.innerHeight / 2 - Math.random() * 200;
+
+      melon.style.left = startX + 'px';
+      melon.style.top = startY + 'px';
+
+      let t = 0;
+      const duration = 60;
+      function frame() {
+        const progress = t / duration;
+        const x = startX + (endX - startX) * progress;
+        const y = (1 - Math.pow((2 * progress - 1), 2)) * (startY - peakY) + peakY;
+        melon.style.left = x + 'px';
+        melon.style.top = y + 'px';
+        t++;
+        if (t <= duration) {
+          requestAnimationFrame(frame);
+        }
+      }
+      frame();
+    }
+
     const gameArea = document.getElementById("gameArea");
     const scoreDisplay = document.getElementById("score");
     let score = 0;
@@ -115,6 +140,7 @@
       });
 
       gameArea.appendChild(melon);
+      animateWatermelon(melon);
 
       setTimeout(() => {
         if (melon.parentNode) {
