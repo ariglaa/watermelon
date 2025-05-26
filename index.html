@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slice the Watermelons!</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: radial-gradient(circle, #ffe6f0, #ffccdd);
+      font-family: sans-serif;
+      color: white;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+
+    .watermelon {
+      position: absolute;
+      width: 80px;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      z-index: 1000;
+    }
+
+    .swipe-line {
+      position: absolute;
+      width: 4px;
+      background: white;
+      opacity: 0.7;
+      z-index: 999;
+      border-radius: 2px;
+      pointer-events: none;
+      animation: fadeOut 0.5s forwards;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: scaleY(2);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="gameArea">
+    <div id="score">Очки: 0</div>
+  </div>
+
+  <script>
+    const gameArea = document.getElementById("gameArea");
+    const scoreDisplay = document.getElementById("score");
+    let score = 0;
+
+    function updateScore(change) {
+      score += change;
+      scoreDisplay.textContent = "Очки: " + score;
+    }
+
+    function spawnWatermelon() {
+      const melon = document.createElement("img");
+      melon.src = "watermelon.png";
+      melon.classList.add("watermelon");
+
+      melon.style.left = Math.random() * (window.innerWidth - 80) + "px";
+      melon.style.top = Math.random() * (window.innerHeight - 80) + "px";
+
+      let swiped = false;
+      let touchStart = null;
+
+      melon.addEventListener("touchstart", (e) => {
+        touchStart = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        };
+      });
+
+      melon.addEventListener("touchmove", (e) => {
+        if (!touchStart) return;
+
+        const touchEnd = {
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY
+        };
+
+        drawSwipe(touchStart, touchEnd);
+
+        const dx = touchEnd.x - touchStart.x;
+        const dy = touchEnd.y - touchStart.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 50) {
+          swiped = true;
+          updateScore(1);
+          melon.remove();
+        }
+      });
+
+      melon.addEventListener("touchend", () => {
+        if (!swiped) {
+          updateScore(-1);
+          melon.remove();
+        }
+      });
+
+      gameArea.appendChild(melon);
+
+      setTimeout(() => {
+        if (melon.parentNode) {
+          updateScore(-1);
+          melon.remove();
+        }
+      }, 3000);
+    }
+
+    function drawSwipe(start, end) {
+      const line = document.createElement("div");
+      line.classList.add("swipe-line");
+
+      const length = Math.hypot(end.x - start.x, end.y - start.y);
+      const angle = Math.atan2(end.y - start.y, end.x - start.x) * 180 / Math.PI;
+
+      line.style.width = length + "px";
+      line.style.height = "4px";
+      line.style.left = start.x + "px";
+      line.style.top = start.y + "px";
+      line.style.transformOrigin = "0 0";
+      line.style.transform = `rotate(${angle}deg)`;
+
+      gameArea.appendChild(line);
+
+      setTimeout(() => {
+        if (line.parentNode) line.remove();
+      }, 500);
+    }
+
+    setInterval(spawnWatermelon, 1200);
+  </script>
+</body>
+</html>
